@@ -1,6 +1,6 @@
--- ejercicio 1
+-- ejercicio 2
 
-CREATE FUNCTION dbo.fn_Stock
+CREATE FUNCTION dbo.fn_PPP
 (
     @calm INTEGER,
     @cprd INTEGER
@@ -8,13 +8,20 @@ CREATE FUNCTION dbo.fn_Stock
 RETURNS DECIMAL(12,2)
 AS
 BEGIN
-    DECLARE @Stock DECIMAL(12,2);
+    DECLARE @PPP DECIMAL(12,2);
 
-    SELECT @Stock = ISNULL(SUM(cant), 0)
+    SELECT @PPP = COALESCE(
+        ROUND(
+            SUM(cant * prec) / NULLIF(SUM(cant), 0),
+            2
+        ),
+        0
+    )
     FROM dbo.sumi
     WHERE calm = @calm
-      AND cprd = @cprd;
+      AND cprd = @cprd
+      AND cant > 0;
 
-    RETURN @Stock;
+    RETURN @PPP;
 END;
 GO
