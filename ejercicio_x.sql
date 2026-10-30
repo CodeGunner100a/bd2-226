@@ -1,19 +1,21 @@
---3
+--4
 
-CREATE FUNCTION dbo.fn_lista
-(
-    @AlmacenOrigen INTEGER
-)
-RETURNS TABLE
+CREATE TRIGGER dbo.tr_ValidarSuministro
+ON dbo.sumi
+AFTER INSERT
 AS
-RETURN
-(
-    SELECT
-        p.cprd AS CodigoProducto,
-        dbo.fn_Stock(@AlmacenOrigen, p.cprd) AS StockProducto,
-        dbo.fn_PPP(@AlmacenOrigen, p.cprd) AS PrecioPromedioPonderado
-    FROM dbo.prod p
-    WHERE p.colo = 'ROJO'
-      AND dbo.fn_Stock(@AlmacenOrigen, p.cprd) > 0
-);
+BEGIN
+    SET NOCOUNT ON;
+
+    IF EXISTS (
+        SELECT 1
+        FROM inserted
+        WHERE cant = 0
+           OR prec <= 0
+           OR impt <= 0
+    )
+    BEGIN
+        THROW 51001, 'Cantidad, precio o importe invalido.', 1;
+    END
+END;
 GO
