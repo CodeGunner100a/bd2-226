@@ -1,27 +1,19 @@
--- ejercicio 2
+-- ejercicio 3
 
-CREATE FUNCTION dbo.fn_PPP
+CREATE FUNCTION dbo.fn_lista
 (
-    @calm INTEGER,
-    @cprd INTEGER
+    @AlmacenOrigen INTEGER
 )
-RETURNS DECIMAL(12,2)
+RETURNS TABLE
 AS
-BEGIN
-    DECLARE @PPP DECIMAL(12,2);
-
-    SELECT @PPP = COALESCE(
-        ROUND(
-            SUM(cant * prec) / NULLIF(SUM(cant), 0),
-            2
-        ),
-        0
-    )
-    FROM dbo.sumi
-    WHERE calm = @calm
-      AND cprd = @cprd
-      AND cant > 0;
-
-    RETURN @PPP;
-END;
+RETURN
+(
+    SELECT
+        p.cprd AS CodigoProducto,
+        dbo.fn_Stock(@AlmacenOrigen, p.cprd) AS StockProducto,
+        dbo.fn_PPP(@AlmacenOrigen, p.cprd) AS PrecioPromedioPonderado
+    FROM dbo.prod p
+    WHERE p.colo = 'ROJO'
+      AND dbo.fn_Stock(@AlmacenOrigen, p.cprd) > 0
+);
 GO
