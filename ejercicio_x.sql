@@ -1,24 +1,18 @@
--- Esta solo es una prueba x
-USE Demo;
-GO
-
-CREATE TRIGGER tr_ImporteCorrecto
-ON dbo.sumi
-AFTER INSERT
+CREATE FUNCTION dbo.fn_Stock
+(
+    @calm INTEGER,
+    @cprd INTEGER
+)
+RETURNS DECIMAL(12,2)
 AS
 BEGIN
-    SET NOCOUNT ON;
+    DECLARE @Stock DECIMAL(12,2);
 
-    IF EXISTS (
-        SELECT 1
-        FROM inserted
-        WHERE cant = 0
-           OR prec <= 0
-           OR impt <= 0
-           OR ABS(impt - ROUND(ABS(cant) * prec, 2)) > 0.01
-    )
-    BEGIN
-        THROW 50001, 'Importe o datos incorrectos', 1;
-    END;
+    SELECT @Stock = ISNULL(SUM(cant), 0)
+    FROM dbo.sumi
+    WHERE calm = @calm
+      AND cprd = @cprd;
+
+    RETURN @Stock;
 END;
 GO
