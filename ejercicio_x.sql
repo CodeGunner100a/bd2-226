@@ -1,18 +1,19 @@
-CREATE FUNCTION dbo.fn_Stock
+--3
+
+CREATE FUNCTION dbo.fn_lista
 (
-    @calm INTEGER,
-    @cprd INTEGER
+    @AlmacenOrigen INTEGER
 )
-RETURNS DECIMAL(12,2)
+RETURNS TABLE
 AS
-BEGIN
-    DECLARE @Stock DECIMAL(12,2);
-
-    SELECT @Stock = ISNULL(SUM(cant), 0)
-    FROM dbo.sumi
-    WHERE calm = @calm
-      AND cprd = @cprd;
-
-    RETURN @Stock;
-END;
+RETURN
+(
+    SELECT
+        p.cprd AS CodigoProducto,
+        dbo.fn_Stock(@AlmacenOrigen, p.cprd) AS StockProducto,
+        dbo.fn_PPP(@AlmacenOrigen, p.cprd) AS PrecioPromedioPonderado
+    FROM dbo.prod p
+    WHERE p.colo = 'ROJO'
+      AND dbo.fn_Stock(@AlmacenOrigen, p.cprd) > 0
+);
 GO
